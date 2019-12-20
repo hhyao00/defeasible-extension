@@ -1,6 +1,6 @@
 def Literal():
     
-    def __init__(self, prop, mod, lit):
+    def __init__(self, prop=None, mod=None, lit=None):
         """
         A true or false statement of certain modality.
         prop is '+' or '-' E.g: ('-',visit) means we do
@@ -18,9 +18,9 @@ def Literal():
         complement of ('+',G,"visit") is ('-',G,"visit")
         """
         if self.prop == '+':
-            return ('-',mod,lit)
+            return Literal('-',mod,lit)
         if self.prop == '-':
-            return ('+',mod,lit)
+            return Literal('+',mod,lit)
     """ end Literal class """
     
 def Rule():
@@ -284,28 +284,12 @@ def DefeasibleExtension():
         
     def DefeasibleConclusion(self):
         """ Algorithm 1 - DefeasibleExtension in the paper. """  
-        
-        ## ----- Utility functions ------------------------ ##
-        
-        def findModConsequents(mod,lit):
-            """  find the rules with modality mod 
-            and lit in the consequence chain """
-            pass
-        
-        def convertable(lit1, lit2):
-            """ A literal is only realizable if the agent 
-            -believes- it is. Beliefs tell of the state of the
-            world through the eyes of the agent and if a literal
-            cannot be reached via a belief rule or chain then 
-            it is not achievable. Returns true or false. """
-            pass
-            
-        ## ------------------------------------------------ ## 
+    
         
         # For every outcome rule, the algorithm makes a copy of the
         # same rule for each mode corresponding to a goal-like attitude
         self.R = []
-        for r in Rules[U]:
+        for r in self.Rules[U]:
             for mod in [D,G,I,SI]:
                 self.R.append(Rule(mod, r.antecedent, r.consequent,
                           r.superiors, r.inferiors))
@@ -315,9 +299,9 @@ def DefeasibleExtension():
         # We also pass along the superior relation set since superior
         # is a transitive relationship.
         self.RB_conv = []
-        for r in Rules[B]:
+        for r in self.Rules[B]:
             for mod in [O,D,G,I,SI]:
-                rules_mod = list(Rules[mod])
+                rules_mod = list(self.Rules[mod])
                 for c0 in r.consequent:
                     for s in rules_mod:
                         if c1 in s.consequent:
@@ -347,9 +331,12 @@ def DefeasibleExtension():
             # If there is no way of reaching, or converting, from a belief
             # to literal l, then it is refuted.
             for l in self.HerbrandBase:
+                reachable = False
                 for r_conv in self.RB_conv:
-                    if len(convertable(r_conv,l)) == 0:
-                        self.Refuted(l,r_conv.mod)
+                    if l in r_conv.consequent:
+                        reachable = True
+                        break
+                if not reachable: self.Refuted(l,r_conv.mod)
             #
             AllRules = self.R + self.RB_conv
             for r in AllRules:
@@ -386,7 +373,11 @@ def DefeasibleExtension():
                         if cmod != B:
                             self.Refuted(l.complement(),cmod)
                     # all rules with modality r.mod that have l.complement
-                    set1 = findModConsequents(r.mod,l.complement())
+                    set1 = set()
+                    lcomp = l.complement()
+                    for ru in AllRules:
+                        if ru.mod == mod and lcomp in r.consequent:
+                            set1.add(ru)
                     set1 = set1 - R_infd
 
                     # if there is an r1 in r_inf that conflicts and
