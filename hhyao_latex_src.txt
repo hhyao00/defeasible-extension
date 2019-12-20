@@ -1,0 +1,106 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{mathtools}
+\usepackage{amsmath}%
+\usepackage{MnSymbol}%
+\usepackage{wasysym}%
+\usepackage{nomencl}
+\usepackage{unicode-math}
+\usepackage{booktabs}
+\usepackage[T1]{fontenc}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\title{Project on \textit{The Rational Behind the Concept of a Goal}}
+\author{Hannah Yao}
+\date{2019 December}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+\textit{The Rationale Behind the Concept of a Goal} by Guido Governatori et al. \citep{Governatori2016TheRB} aims to formalize into a set of rules the decision process of rational and cognitive agent operating in an environment with some objectives to achieve given the existence of personal desires and contextual obligations. The system is abstracted and represented as, (1) the environment in which the agent exists, and how the agent views the world (2) the norms and constraints of the application domain, and (3) the agent's internal constraints and objectives.
+\newline \newline
+The abstraction is based on the \textit{Belief, Obligation, Intention, Desire} model, in which mental attitude embodies the objectives and beliefs describe the environment (through one's own view of the world), and there may be conflicts between the agent's desires and obligations or the norms. The paper purposes that: goals, desires, and intentions are all part of the same phenomenon, and unified into the notion of an outcome, which is something that the agent can expect to ultimately happen (end goal). In addition, the agent  prefers certain outcomes over others. Thus the agent's wants are affected by obligations and norms, which results in a subset of actions that is the outcome.
+\newline \newline
+\textbf{Defeasible Reasoning} \newline
+Reasoning is defeasible when the corresponding argument is rationally compelling but not deductively valid. The truth of the premises of a good defeasible argument provide support for the conclusion, even though it is possible for the premises to be true and the conclusion false. In other words, the relationship of support between premises and conclusion is a tentative one, or modal \citep{sep-reasoning-defeasible}. Defeasible reasoning can be studied as a branch of logic through a argumentative way, which represents a way of reasoning over a knowledge base containing possibly incomplete and/or inconsistent information, to obtain useful conclusions, and Defeasible Logic Programming offers a computational reasoning system that uses an argumentation engine to obtain answers from a knowledge base represented using a logic programming language extended with defeasible rules \citep{Garcia:2004:DLP:986843.986847}.
+\newline \newline
+\textbf{Project Objective} \newline
+Python implementation of Defeasible Extension Algorithm as mentioned in the paper, which computes the defeasible conclusions for given modality (not complete/functional currently, but complete enough to be read as psuedocode).
+
+\section{Definitions and framework}
+The agent's knowledge base is represented as rules, for example:
+\begin{equation}
+    r_1: drive\_car \Rightarrow_o \neg damage \oplus compensate \oplus foreclosure
+\end{equation}
+says that: if an agent drives a car, then he has the obligation not to cause any damage; if he causes damage, then he is obliged to compensate; if he fails to compensate, then there is an obligation of foreclosure. $\oplus$ is a preference operator. This illustrates a sequences of outcomes or alternatives that are ordered from most to least desirable. All knowledge (derivable) either exist as rules, or as a Fact (the knowledge base). The paper formally defines the following:
+\begin{enumerate}
+    \item Desires are acceptable outcomes and always compatible with other expected or acceptable outcomes. If $b1 = \neg b2$, both b1 and b2 are acceptable (2.1). However, if $\neg b1 \in Knowledge\_Base$, then +b1 must be discarded; else this is wishful thinking and not rational. 
+    \item Suppose $ r1 \Rightarrow visit$ and $r2 \Rightarrow \neg visit$, and we know, for example, Alice prefers to visit John (r1) but that she knows she should not visit John because she has to do homework (r2), but she believes r1 \textgreater r2 (is superior). Then the elements of the weaker rule with an incompatible counterpart in the stronger rule are not considered desires (2.1, 2.2). And Alice would visit John.
+    \item Goals are preferred outcomes in a chain of alternative choices. Using rule superiority, outcomes can be discarded for the weaker rule (2.2). Thus a goal is the most preferred outcome.
+    \item The agent's beliefs can determine what is achievable. If a rational agent, for example, believes $\neg visit$ holds, then attempting \textit{visit} is a waste of effort and should focus on the next best outcome. Otherwise the agent is not rational (2.3).
+    \item The "next best outcome" mentioned above is regarded as \textit{intention} (2.3). An intention is an acceptable outcome that does not conflict with the agent's internal beliefs about the environment.
+    \item A \textit{social intention} is an intention that does not violate societal or external norms. For example, if Alice wants to visit John, but John is under house arrest, then even though she has the intention, she would have to resort to another outcome (social intention) because the law enforces she cannot visit John ($\neg visit$ holds).
+    \item Unit of interest is a \textit{modal operator applied to a liter}: MOD = \{B,O,D,G,I,SI\} for belief, obligation, desire, goal, intention, social intention. And MODLIT = \{Xl, $\neg$ Xl | l is a propositional atom that is p or $\neg$p, and X $\in$ MOD-\{B\}\}. A belief \textit{Bl} is equivalent to the single literal \textit{l} since beliefs describe environment (3 def. 1).
+    \item A \textit{defeasible theory D} is a structure (Facts F, Rules, \textgreater) where $F\subseteq Literal \cup MODLIT$ and is a set of indisputable statements. \textit{R} consists of three different types of rules for beliefs, obligations, and outcomes. And \textgreater \space is for resolving conflict between rules (3 def. 2). For example, O$\neg visit \in F$ means there exists the obligation to fulfill outcome not visit.
+    \item \textit{Belief rules} relate factual knowledge of an agent and relate states: The world as seen from the agent's perspective.
+    \item \textit{Obligation rules} determine which obligations are active and should be met. 
+    \item \textit{Outcome rules} enumerate possible outcomes depending on the context. Outcome and obligation rules derive conclusions for all modes representing goal-like attitudes, which includes desires, goals, intentions and social intentions.
+\end{enumerate}
+\hfill
+
+\textbf{The following briefly state rule applicability and defeasible provability in English.}
+\begin{enumerate}
+    \item \textit{Defeasible rule} is an expression: r: A(r) $\Rightarrow_X$ C(r) where r is the name of the rule, A(r) = \{$a_1...a_n$\} and a set of premises, ordered alternatives. $X \in \{B, O, U\}$, and C(r) is the consequent or head of the rule. It is either a single literal if X = B or a preference expression. For example, A(r) $\Rightarrow_o c$ and the premises hold, then \textit{r} can be used to prove Oc (3 def. 3).
+    \item \textit{Body applicable} : A rule $r\in R$ is body-applicable iff for a Proof P and X $\in \{O,D,G,I,SI\}$ for all $a_i \in A(r)$ such that (1) $a_i = Xl and -\delta_Xl \in P(1...n)$ (2) if $a_i = \neg Xl$ then $-\delta_Xl \in P(1...n)$ (3) if $a_i = l \in Literal$ then $+\delta_Bl \in P(1...n)$.
+    \item \textit{Rule conversion} : Convert(X,Y) states rule of mode X can produce conclusions of mode Y. In addition, non-beliefs cannot convert to beliefs, but beliefs can convert to another mode, since having a goal cannot change how the agent initially viewed the world. Different modal operators interact through \textit{rule conversion} and \textit{rule resolution}.
+    \item \textit{Conflict detection and resolution} : Conflict(X, Y) such that X and Y conflict and X \textgreater Y. Consider: Conflict(Belief, Intention), Conflict(Belief, Social Intention) and Conflict(Obligation, Social Intention). Conflict between belief and intention modes implies agents can recognize conflict and are therefore realistic. Conflict(O, SI) implies agent is aware of norms. Conflict is resolved by \textgreater.
+    \item A \textit{Proof} consists of P(1)...P(n) of tagged literals that are denoted $+\delta_X q$ or $-\delta_X q$ where X $\in$ MOD, $+\delta_X q$ means that consequent q is defeasibly provable in mode X in a given defeasible theory. If it is not provable then it is refuted, or in $-\delta_X q$ (def. 4).
+    \item Intuitively: Rules can be either applicable or discarded depending on the body of the rule. When considering obligations, if we are considering the ith element, then that is only because all previous elements are violated. So a literal can only be a goal if none before it has been proved as such. Intentions must have no factual knowledge of the opposite conclusion else wise it is wishful thinking (def. 8).
+    \item Example: $F = \{a, b, Oc\}$ and $R = \{r1: a \Rightarrow_o b$, r2: $b,c \Rightarrow d\}$, r1 is applicable while r2 is not because c does not exist in F. But r2 is Convert-applicable because Oc is a fact, and r1 produced Ob (def. 8).
+    \item In order to assert \textit{q} in an element chain as a desire, then there must be no stronger argument (or rule) of opposite desire.
+    \item \textit{Defeasible provability for obligation, goal, intention and social intention}. In order to assert literal \textit{q} is defeasibly provable in modality X: (1) Xq is a fact or (2) a complementary literal of same or conflictual modality does not appear as a fact and there is some applicable rule for X and q. (3) Every rule for case $\neg q$ of a same or conflicting modality must be discarded. (4) There is also no stronger attacking rule for case $\neg q$ (def.13).
+    \item Example: $F = \{a_1, a_2, \neg b_1, O\neg b_2\}$ and $R = \{r1: a_1 \Rightarrow_u b_1 \oplus b_2 \oplus b_3 \oplus b_4, r2: a_2 \Rightarrow_u b_4\}$. Where $\Rightarrow_u$ is the outcome rule. Every $b_i$ is trivially a desire. \newline Consider we have as goal $b_1$, but $\neg b_1 \in F$ ($+\delta \neg b_1$) so we cannot have that, which means $-\delta_{I,SI} b_1$. Then everything beyond $b_1$ is considered as intentions. Since $b_2$ is intention I then $b_3, b_4$ are discarded as intentions. But since O$\neg b2$ is a fact, r1 is discarded for SI and b2 which makes SI applicable again for SI and b3, proving $+\delta_{SI} b_3$. Then r1 is discarded for b4. But the defeasible theory still derives b4 because of r2, such that $Defeasible\_theory \vdash +\delta_{D,G,I,SI} b_4$.
+    \item In addition, if we consider literal q as a desire D, then the modality for q cannot be \{G,I,SI\} since literals are considered in preference order. If we discard q as desire, then we would move onto considering q as intention, which would be irrational because q was already shown as unachievable (proposition 3).
+\end{enumerate}
+
+\section{Computing the extension of a finite defeasible theory}
+An extension is the smallest set that contains all the facts of the theory. In this case it would be a set of outcomes given the environment constraints.\newline\newline
+For the algorithm notation: $\blacksquare$ denotes a generic modality, $\square$ denotes a fixed chosen modality in $\blacksquare$. $R_{sup}$ is the set of superior rules such that r \textgreater s, and $R_{inf}$ is the set of inferior rules. The Herbrand Base $HB = \{\square l | \square \in MOD, l \in HB_D \}$ where $HB_D$ is the set of literals such that a literal or complement appears in the defeasible theory. The consequents of rules are modified via truncation and or removal of alternatives. The \textit{defeasible extension} is $E(D) = (+\delta_\blacksquare, -\delta_\blacksquare)$.
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.8]{algorithm}
+\end{figure}
+The algorithm uses operations of truncation and elimination to obtain a simplified but equivalent theory at each step. Proving a literal reveals which rules should be discarded or reduced in head or body. 
+\newline \newline
+A rule can "fire" (line 18) when the antecedent (body) of the rule has been truncated to length zero from previous iterations of the algorithm. If literal q is proved then at the next step: (1) then A(r) does not depend on l $\in$ A(r) anymore, and it can be removed. (2) Any rule in which the intersection with the complement set of the proved literal that is not empty is discarded. Superiority tuples are now useless because q was proved true (3) if q = Om, chains for obligation rules can be truncated at ~m.  
+\newline \newline
+Lines 1-5 set up data structures, lines 6-9 handle facts as proved literals. The algorithm checks whether there are rules with an empty body: those are applicable and produce conclusions in a mode X. It also checks for the complement of the same mode, if so then those are weaker than the applicable ones. When a literal is evaluated to provable the algorithm calls PROVED and when a literal is rejected, REFUTED is called. The two subroutines reduce the complexity of the theory.
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.31]{subroutine.png}
+\end{figure}
+\section{More Intuitive Explanation of defeasible extension algorithm}
+This section aims to outline the Defeasible Extension algorithm in words. Can also be found as comments in the python code. \newline \newline
+A Defeasible Extension Algorithm class consists of \textbf{Rules}, a map, where the key is the modality and value is a list of corresponding rules of the key modality), \textbf{R} for rules of modality that are of goal-like attitudes, and produce outcomes. For example, Obligation O drives an agent towards a goal by eliminating violations of O and thus is of a goal-like attitude. \textbf{LiteralMods}, a map where key is the modality and value is a list of literals that ontake this modality. For example, given (O,visit), O is modality and visit is the literal. \textbf{conclusions}, both global and local defeasible conclusions. The local defeasible conclusions are updated at each iteration and are used to update the global sets. \newline \newline
+For every outcome rule, the algorithm makes a copy of the same rule corresponding to a goal like attitude. Since beliefs can be obligations as well, for example, rules with belief as modality are copied to ontake the modality of the conversion to. Since beliefs are also facts, or how the agent see the world, we immediately mark belief rules as Proved, or Refuted. Keeping in mind the closed world assumption. \newline \newline
+Then, for every literal l in the Herbrand Base, it is necessary that the literal l is reachable from some belief rule. If it is not reachable, then the literal cannot be derived from what the agent thinks is achievable, and thus the literal l is marked as Refuted. Rules that can "fire" have an empty body, or antecedent. This means that all antecedents in the head were either proved and removed, or refuted, and removed. In any case, all "if" conditions are satisfied and the "then" consequents can fire. If a rule \textit{r} is proven because the body is empty, then we can check if there is any rule \textit{s} that is superior to \textit{r}. If there is no such \textit{s} then the complement of \textit{r}, \textit{~r}, is Refuted. If \textit{r} has modality Desire then it is Proved. The complement is refuted in modality of the rule, since logical agents do not exhibit wishful thinking, or wanting the impossible, apart from Desire modalities. We also check for conflicts with the rule modality for which the literal \textit{l} in the rule consequents is observed. All literals of rules with conflicting modality are refuted \textit{l} since we know there is no superior rule to \textit{r}.
+\newline
+\section{Implementation Details}
+Apart from the algorithm class Defeasible Extension, there are two classes: \textbf{Rule} and \textbf{Literal}. A rule has a \textit{modality} in {belief, obligation, desire, goal, intention, outcome, social intention}, \textit{antecedent} list of literal premises, \textit{consequent} chain of literal outcomes, \textit{superiors} set of rules that dominate current rule, and \textit{inferiors} set of rules that this current rule dominates. Literals make up a rule's antecedents and consequents. A literal has a \textit{prop}, which is either '+' or '-', \textit{mod} which corresponds to the rule it belongs to, \textit{lit} which is the literal. For example: literal ('-',D,visit\_john) means the agent does not have the desire to visit John.
+\section{Links}
+Original paper: https://arxiv.org/abs/1512.04021/
+\newline
+Github: https://github.com/hhyao00/defeasible-extension
+\newline
+\break
+\break
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
